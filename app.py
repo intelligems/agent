@@ -1,6 +1,7 @@
 import os
 import shutil
 from functools import wraps
+from uuid import UUID
 
 import docker
 from flask import Flask
@@ -30,6 +31,23 @@ def requires_auth(f):
             )
         return f(*args, **kwargs)
     return decorated
+
+
+def validate_uuid4(uuid_string):
+    """Validate that a UUID string is in fact a valid uuid4."""
+
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # If it's a value error, then the string
+        # is not a valid hex code for a UUID.
+        return False
+
+    # If the uuid_string is a valid hex code, but an invalid uuid4,
+    # the UUID.__init__ will convert it to a valid uuid4.
+    # This is bad for validation purposes.
+
+    return val.hex == uuid_string
 
 
 def _format_uuid(uuid):
@@ -65,6 +83,8 @@ def cleanup():
         abort(400)
     raw_uuid = request.json['uuid']
     uuid = _format_uuid(raw_uuid)
+    if not validate_uuid4(uuid):
+        abort(400)
     cli = _get_docker_client()
     containers = cli.containers(
         filters={
