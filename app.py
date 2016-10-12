@@ -76,13 +76,13 @@ def cleanup():
     networks = cli.networks(names=[uuid])
     for network in networks:
         cli.remove_network(network.get('Id'))
-    volumes = cli.volumes(filters={'name': uuid}).get('Volumes', [])
+    volumes = cli.volumes(filters={'name': uuid}).get('Volumes')
     if volumes:
         for volume in volumes:
             cli.remove_volume(volume.get('Name'))
     images = cli.images(name=(uuid + '*'))
     for image in images:
-        tag = image.get('RepoTags', [])[0]
+        tag = image.get('RepoTags')[0]
         if tag:
             cli.remove_image(tag, force=True)
     code_dir = os.path.join('/mnt/stolos', raw_uuid)
