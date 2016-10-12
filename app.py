@@ -37,7 +37,7 @@ def _format_uuid(uuid):
 
 
 def _get_docker_client():
-    """Gets a Docker client, using the configuration defined in settings.py"""
+    """Gets a Docker client, using the configuration defined in environment"""
     tls_config = None
     DOCKER_CERT_PATH = os.getenv('DOCKER_CERT_PATH')
     DOCKER_HOST = os.getenv('DOCKER_HOST', 'unix:///var/run/docker.sock')
