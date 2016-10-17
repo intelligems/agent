@@ -107,7 +107,24 @@ def cleanup():
             cli.remove_image(tag, force=True)
     code_dir = os.path.join('/mnt/stolos', raw_uuid)
     if os.path.exists(code_dir):
-        shutil.rmtree(code_dir)
+        try:
+            c = cli.create_container(
+                image='alpine:latest',
+                command=['rm', '-rf', '/mnt/stolos/{}'.format(raw_uuid)],
+                volumes=['/mnt/stolos'],
+                host_config=cli.create_host_config(binds=['/mnt/stolos:/mnt/stolos'])
+            )
+        except docker.errors.NotFound:
+            cli.pull('alpine:latest')
+            c = cli.create_container(
+                image='alpine:latest',
+                command=['rm', '-rf', '/mnt/stolos/{}'.format(raw_uuid)],
+                volumes=['/mnt/stolos'],
+                host_config=cli.create_host_config(binds=['/mnt/stolos:/mnt/stolos'])
+            )
+        cli.start(c)
+        cli.wait(c)
+        cli.remove_container(c)
     return ('', 200)
 
 if __name__ == "__main__":
