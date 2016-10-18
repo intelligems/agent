@@ -109,7 +109,7 @@ def cleanup():
     code_dir = os.path.join('/mnt/stolos', raw_uuid)
     if os.path.exists(code_dir):
         try:
-            cli.inspect_container('alpine:latest')
+            cli.inspect_image('alpine:latest')
         except docker.errors.NotFound:
             cli.pull('alpine:latest')
         c = cli.create_container(
