@@ -5,6 +5,7 @@ from uuid import UUID
 
 import docker
 from flask import Flask
+from flask import jsonify
 from flask import Response
 from flask import request
 app = Flask(__name__)
@@ -108,24 +109,19 @@ def cleanup():
     code_dir = os.path.join('/mnt/stolos', raw_uuid)
     if os.path.exists(code_dir):
         try:
-            c = cli.create_container(
-                image='alpine:latest',
-                command=['rm', '-rf', '/mnt/stolos/{}'.format(raw_uuid)],
-                volumes=['/mnt/stolos'],
-                host_config=cli.create_host_config(binds=['/mnt/stolos:/mnt/stolos'])
-            )
+            cli.inspect_container('alpine:latest')
         except docker.errors.NotFound:
             cli.pull('alpine:latest')
-            c = cli.create_container(
-                image='alpine:latest',
-                command=['rm', '-rf', '/mnt/stolos/{}'.format(raw_uuid)],
-                volumes=['/mnt/stolos'],
-                host_config=cli.create_host_config(binds=['/mnt/stolos:/mnt/stolos'])
-            )
+        c = cli.create_container(
+            image='alpine:latest',
+            command=['rm', '-rf', '/mnt/stolos/{}'.format(raw_uuid)],
+            volumes=['/mnt/stolos'],
+            host_config=cli.create_host_config(binds=['/mnt/stolos:/mnt/stolos'])
+        )
         cli.start(c)
         cli.wait(c)
         cli.remove_container(c)
-    return ('', 200)
+    return jsonify(**{'success': True})
 
 if __name__ == "__main__":
     app.run()
